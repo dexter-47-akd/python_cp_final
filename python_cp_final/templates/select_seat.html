@@ -1,0 +1,588 @@
+{% extends "base.html" %}
+
+{% block title %}Select Seats - {{ train.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .seat-selection-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .train-info-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--box-shadow);
+    }
+
+    .train-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .train-name {
+        font-size: 1.8rem;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .train-number {
+        color: var(--light-text);
+        font-size: 1.1rem;
+    }
+
+    .train-route {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .route-info {
+        text-align: center;
+    }
+
+    .route-time {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .route-station {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .route-line {
+        flex-grow: 1;
+        height: 2px;
+        background: var(--secondary-color);
+        position: relative;
+    }
+
+    .route-line::before,
+    .route-line::after {
+        content: '';
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .route-line::before {
+        left: -5px;
+    }
+
+    .route-line::after {
+        right: -5px;
+    }
+
+    .coach-container {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+    }
+
+    .coach-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--secondary-color);
+    }
+
+    .coach-title {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .coach-selector {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .coach-btn {
+        padding: 0.75rem 1.5rem;
+        border: 2px solid var(--primary-color);
+        border-radius: var(--border-radius);
+        background: white;
+        color: var(--primary-color);
+        font-weight: 500;
+        transition: var(--transition);
+        cursor: pointer;
+        min-width: 120px;
+        text-align: center;
+    }
+
+    .coach-btn.active {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .coach-btn:hover:not(.active) {
+        background: rgba(26, 35, 126, 0.1);
+    }
+
+    .seat-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .seat-row {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .seat {
+        width: 45px;
+        height: 45px;
+        border: 2px solid var(--secondary-color);
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        font-size: 0.9rem;
+        position: relative;
+        background: white;
+    }
+
+    .seat.available {
+        background: #4CAF50;
+        border-color: #4CAF50;
+        color: white;
+    }
+
+    .seat.booked {
+        background: #f44336;
+        border-color: #f44336;
+        color: white;
+        cursor: not-allowed;
+    }
+
+    .seat.selected {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+    }
+
+    .seat.premium {
+        background: #FFC107;
+        border-color: #FFC107;
+        color: #333;
+    }
+
+    .seat:hover:not(.booked) {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .seat-type {
+        position: absolute;
+        top: -1.5rem;
+        font-size: 0.8rem;
+        width: 100%;
+        text-align: center;
+        background: white;
+        padding: 0.25rem 0;
+        border-radius: 4px;
+        box-shadow: var(--box-shadow);
+        font-weight: 500;
+    }
+
+    .price-tag {
+        position: absolute;
+        bottom: -1.5rem;
+        font-size: 0.8rem;
+        width: 100%;
+        text-align: center;
+        background: white;
+        padding: 0.25rem 0;
+        border-radius: 4px;
+        box-shadow: var(--box-shadow);
+        font-weight: 500;
+    }
+
+    .aisle {
+        width: 40px;
+        height: 2px;
+        background: var(--secondary-color);
+    }
+
+    .legend {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+
+    .legend-text {
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
+    .booking-summary {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        box-shadow: var(--box-shadow);
+        position: sticky;
+        top: 2rem;
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+
+    .selected-seats {
+        margin-bottom: 1.5rem;
+    }
+
+    .seat-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .total-price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-top: 1rem;
+    }
+
+    .btn-proceed {
+        width: 100%;
+        padding: 1rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        font-size: 1.1rem;
+        font-weight: 500;
+        transition: var(--transition);
+        margin-top: 1.5rem;
+    }
+
+    .btn-proceed:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .btn-proceed:disabled {
+        background: var(--light-text);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @media (max-width: 768px) {
+        .train-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .coach-selector {
+            gap: 0.5rem;
+        }
+
+        .coach-btn {
+            padding: 0.5rem 1rem;
+            min-width: 100px;
+            font-size: 0.9rem;
+        }
+
+        .seat {
+            width: 40px;
+            height: 40px;
+            font-size: 0.8rem;
+        }
+
+        .aisle {
+            width: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="seat-selection-container">
+    <form method="POST" action="{{ url_for('book_ticket') }}" id="booking-form">
+        <input type="hidden" name="train_id" value="{{ train.id }}">
+        <input type="hidden" name="journey_date" value="{{ journey_date }}">
+        <input type="hidden" name="seat_ids" id="selected-seat-ids">
+        
+        <div class="train-info-card">
+            <div class="train-header">
+                <div>
+                    <h1 class="train-name">{{ train.name }}</h1>
+                    <div class="train-number">{{ train.train_number }}</div>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted">Journey Date</div>
+                    <div class="fw-bold">{{ journey_date }}</div>
+                </div>
+            </div>
+            <div class="train-route">
+                <div class="route-info">
+                    <div class="route-time">{{ train.departure_time }}</div>
+                    <div class="route-station">{{ train.source.name }}</div>
+                </div>
+                <div class="route-line"></div>
+                <div class="route-info">
+                    <div class="route-time">{{ train.arrival_time }}</div>
+                    <div class="route-station">{{ train.destination.name }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="coach-container">
+                    <div class="coach-header">
+                        <h2 class="coach-title">Select Coach</h2>
+                    </div>
+
+                    <div class="coach-selector">
+                        {% for coach in ['A1', 'A2', 'A3'] %}
+                        <button type="button" class="coach-btn {% if loop.first %}active{% endif %}" data-coach="{{ coach }}">
+                            Coach {{ coach }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="seat-layout">
+                        {% for seat in seats %}
+                            {% if loop.index0 % 6 == 0 %}
+                                <div class="seat-row">
+                            {% endif %}
+                            
+                            <div class="seat {% if seat.id in booked_seat_ids %}booked{% else %}available{% endif %}"
+                                 data-seat-id="{{ seat.id }}" 
+                                 data-seat-number="{{ seat.seat_number }}"
+                                 data-price="{{ seat.price }}"
+                                 data-coach="{{ seat.coach }}">
+                                <div class="seat-type">{{ seat.seat_type }}</div>
+                                <div class="seat-number">{{ seat.seat_number }}</div>
+                                <div class="price-tag">₹{{ seat.price }}</div>
+                            </div>
+                            
+                            {% if loop.index0 % 6 == 2 %}
+                                <div class="aisle"></div>
+                            {% endif %}
+                            
+                            {% if loop.index0 % 6 == 5 or loop.last %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4CAF50;"></div>
+                            <span class="legend-text">Available</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--primary-color);"></div>
+                            <span class="legend-text">Selected</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #f44336;"></div>
+                            <span class="legend-text">Booked</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FFC107;"></div>
+                            <span class="legend-text">Premium</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="booking-summary">
+                    <h3 class="summary-title">Booking Summary</h3>
+                    <div class="selected-seats">
+                        <!-- Selected seats will be added here dynamically -->
+                    </div>
+                    <div class="passenger-details" style="display: none;">
+                        <h4 class="mb-3">Passenger Details</h4>
+                        <div class="passenger-forms">
+                            <!-- Passenger forms will be added here dynamically -->
+                        </div>
+                    </div>
+                    <div class="total-price">
+                        Total: ₹<span id="total-amount">0</span>
+                    </div>
+                    <button type="submit" class="btn-proceed" disabled>
+                        <i class="fas fa-ticket-alt me-2"></i>Proceed to Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const seats = document.querySelectorAll('.seat:not(.booked)');
+        const selectedSeats = new Set();
+        const totalAmount = document.getElementById('total-amount');
+        const proceedButton = document.querySelector('.btn-proceed');
+        const selectedSeatsContainer = document.querySelector('.selected-seats');
+        const passengerDetails = document.querySelector('.passenger-details');
+        const passengerForms = document.querySelector('.passenger-forms');
+        const selectedSeatInput = document.getElementById('selected-seat-ids');
+        const bookingForm = document.getElementById('booking-form');
+        const coachButtons = document.querySelectorAll('.coach-btn');
+
+        // Handle seat selection
+        seats.forEach(seat => {
+            seat.addEventListener('click', function() {
+                const seatId = this.dataset.seatId;
+                const seatNumber = this.dataset.seatNumber;
+                const price = parseInt(this.dataset.price);
+                const coach = this.dataset.coach;
+
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                    selectedSeats.delete(seatId);
+                } else {
+                    // Add the new seat
+                    this.classList.add('selected');
+                    selectedSeats.add(seatId);
+                }
+
+                updateSummary();
+            });
+        });
+
+        function updateSummary() {
+            let total = 0;
+            selectedSeatsContainer.innerHTML = '';
+            passengerForms.innerHTML = '';
+            
+            if (selectedSeats.size > 0) {
+                passengerDetails.style.display = 'block';
+            } else {
+                passengerDetails.style.display = 'none';
+            }
+
+            selectedSeats.forEach(seatId => {
+                const seat = document.querySelector(`.seat[data-seat-id="${seatId}"]`);
+                const seatNumber = seat.dataset.seatNumber;
+                const price = parseInt(seat.dataset.price);
+                const coach = seat.dataset.coach;
+                total += price;
+
+                // Add seat to summary
+                const seatItem = document.createElement('div');
+                seatItem.className = 'seat-item';
+                seatItem.innerHTML = `
+                    <span>Coach ${coach} - Seat ${seatNumber}</span>
+                    <span>₹${price}</span>
+                `;
+                selectedSeatsContainer.appendChild(seatItem);
+
+                // Add passenger form
+                const passengerForm = document.createElement('div');
+                passengerForm.className = 'passenger-form mb-3';
+                passengerForm.innerHTML = `
+                    <div class="form-group">
+                        <label for="passenger_name_${seatId}">Passenger Name (Seat ${seatNumber})</label>
+                        <input type="text" class="form-control" id="passenger_name_${seatId}" 
+                               name="passenger_names[]" required>
+                        <input type="hidden" name="seat_ids[]" value="${seatId}">
+                    </div>
+                `;
+                passengerForms.appendChild(passengerForm);
+            });
+
+            totalAmount.textContent = total;
+            proceedButton.disabled = selectedSeats.size === 0;
+            
+            // Update the hidden input with selected seat IDs
+            selectedSeatInput.value = Array.from(selectedSeats).join(',');
+        }
+
+        // Handle form submission
+        bookingForm.addEventListener('submit', function(e) {
+            if (selectedSeats.size === 0) {
+                e.preventDefault();
+                alert('Please select at least one seat before proceeding.');
+                return;
+            }
+
+            // Validate passenger names
+            const passengerInputs = document.querySelectorAll('input[name="passenger_names[]"]');
+            let isValid = true;
+            passengerInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please enter passenger names for all selected seats.');
+            }
+        });
+
+        // Handle coach selection
+        coachButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                coachButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const selectedCoach = this.dataset.coach;
+                seats.forEach(seat => {
+                    if (seat.dataset.coach === selectedCoach) {
+                        seat.closest('.seat-row').style.display = 'flex';
+                    } else {
+                        seat.closest('.seat-row').style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

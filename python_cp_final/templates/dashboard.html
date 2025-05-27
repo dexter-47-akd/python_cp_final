@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Railway Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Welcome, {{ current_user.username }}!</h2>
+    
+    <div class="mt-4">
+        <h3>Your Bookings</h3>
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Train</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Date</th>
+                            <th>Seat</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                            <tr>
+                                <td>{{ booking.train.name }}</td>
+                                <td>{{ booking.train.source.name }}</td>
+                                <td>{{ booking.train.destination.name }}</td>
+                                <td>{{ booking.journey_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ booking.seat.seat_number }} ({{ booking.seat.coach }})</td>
+                                <td>
+                                    <span class="badge bg-success">{{ booking.status }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('booking_confirmation', booking_ids=booking.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-ticket-alt"></i> View Ticket
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>You have no bookings yet.</p>
+            <a href="{{ url_for('search') }}" class="btn btn-primary">Book a Train</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effect to booking rows
+        const bookingRows = document.querySelectorAll('tbody tr');
+        bookingRows.forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', function() {
+                const viewButton = this.querySelector('.btn-primary');
+                if (viewButton) {
+                    viewButton.click();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Railway Management System{% endblock %}
+
+{% block content %}
+<section class="search-results">
+    <h2>Available Trains</h2>
+    
+    {% if trains %}
+        <div class="results-container">
+            {% for train in trains %}
+                <div class="train-card">
+                    <div class="train-header">
+                        <h3>{{ train.name }}</h3>
+                        <span class="train-number">{{ train.train_number }}</span>
+                    </div>
+                    <div class="train-details">
+                        <div class="train-route">
+                            <div class="station">
+                                <p class="time">{{ train.departure_time.strftime('%H:%M') }}</p>
+                                <p class="date">{{ train.departure_time.strftime('%d %b') }}</p>
+                                <p class="name">{{ train.source.name }}</p>
+                            </div>
+                            <div class="journey-line">
+                                <span class="duration">{{ (train.arrival_time - train.departure_time).total_seconds() // 3600 }} hrs</span>
+                            </div>
+                            <div class="station">
+                                <p class="time">{{ train.arrival_time.strftime('%H:%M') }}</p>
+                                <p class="date">{{ train.arrival_time.strftime('%d %b') }}</p>
+                                <p class="name">{{ train.destination.name }}</p>
+                            </div>
+                        </div>
+                        <div class="train-info">
+                            <p><i class="fas fa-chair"></i> Available Seats: {{ train.total_seats }}</p>
+                            <p><i class="fas fa-rupee-sign"></i> Starting from ₹800</p>
+                        </div>
+                    </div>
+                    <div class="train-actions">
+                        <a href="{{ url_for('select_seat', train_id=train.id, journey_date=date) }}" class="btn btn-primary">Select Seats</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>No trains found for the selected route and date.</p>
+            <a href="{{ url_for('search') }}" class="btn btn-secondary">Try Another Search</a>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

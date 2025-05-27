@@ -1,0 +1,580 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-confirmation {
+        padding: 3rem 0;
+        min-height: calc(100vh - 200px);
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .confirmation-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .confirmation-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 2.5rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .confirmation-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4CAF50, #2196F3);
+    }
+
+    .confirmation-header i {
+        font-size: 5rem;
+        color: #4CAF50;
+        margin-bottom: 1.5rem;
+        animation: scaleIn 0.5s ease-out;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .confirmation-header h2 {
+        font-size: 2.5rem;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .confirmation-header p {
+        font-size: 1.2rem;
+        color: #7f8c8d;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .tickets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .booking-details {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .booking-details::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2196F3, #4CAF50);
+    }
+
+    .booking-details:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .ticket-header h2 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .status {
+        background: #4CAF50;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .passenger-info, .journey-info, .seat-info {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .passenger-info:hover, .journey-info:hover, .seat-info:hover {
+        background: #f0f2f5;
+        transform: translateX(5px);
+    }
+
+    .passenger-info h3, .journey-info h3, .seat-info h3 {
+        color: #2c3e50;
+        font-size: 1.3rem;
+        margin-bottom: 1.2rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .passenger-info h3::before {
+        content: '\f007';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: #2196F3;
+    }
+
+    .journey-info h3::before {
+        content: '\f072';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: #4CAF50;
+    }
+
+    .seat-info h3::before {
+        content: '\f236';
+        font-family: 'Font Awesome 5 Free';
+        font-weight: 900;
+        color: #FF9800;
+    }
+
+    .booking-details p {
+        margin-bottom: 0.8rem;
+        color: #34495e;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .booking-details p:last-child {
+        border-bottom: none;
+    }
+
+    .booking-details strong {
+        color: #2c3e50;
+        font-weight: 600;
+        min-width: 120px;
+    }
+
+    .total-amount {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 3rem;
+        text-align: right;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .total-amount::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #FF9800, #F44336);
+    }
+
+    .total-amount h5 {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+    }
+
+    .confirmation-actions .btn {
+        padding: 1rem 2rem;
+        border-radius: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .confirmation-actions .btn-primary {
+        background: #2196F3;
+        color: white;
+    }
+
+    .confirmation-actions .btn-primary:hover {
+        background: #1976D2;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+    }
+
+    .confirmation-actions .btn-success {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .confirmation-actions .btn-success:hover {
+        background: #388E3C;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+    }
+
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 2rem;
+        border-radius: 20px;
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        position: relative;
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .close-modal {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 1rem 0;
+    }
+
+    .ticket-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .ticket-details-section {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .ticket-details-section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .ticket-details-section h4 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .ticket-details-section p {
+        margin-bottom: 1rem;
+        color: #34495e;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .ticket-details-section p:last-child {
+        border-bottom: none;
+    }
+
+    .ticket-details-section strong {
+        color: #2c3e50;
+        font-weight: 600;
+        min-width: 120px;
+    }
+
+    @media print {
+        .confirmation-actions {
+            display: none;
+        }
+        
+        .booking-details {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .confirmation-container {
+            padding: 0 1rem;
+        }
+
+        .tickets-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .confirmation-actions {
+            flex-direction: column;
+        }
+
+        .confirmation-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-confirmation">
+    <div class="confirmation-container">
+        <div class="confirmation-header">
+            <i class="fas fa-check-circle"></i>
+            <h2>Booking Confirmation</h2>
+            <p>Your booking has been confirmed. Please find the details below.</p>
+        </div>
+        
+        <div class="tickets-grid">
+            {% for booking in bookings %}
+            <div class="booking-details" data-booking-id="{{ booking.id }}">
+                <div class="ticket-header">
+                    <h2>Ticket #{{ booking.id }}</h2>
+                    <span class="status">Confirmed</span>
+                </div>
+                
+                <div class="passenger-info">
+                    <h3>Passenger Details</h3>
+                    <p><strong>Name:</strong> {{ booking.passenger_name }}</p>
+                </div>
+                
+                <div class="journey-info">
+                    <h3>Journey Details</h3>
+                    <p><strong>Train:</strong> {{ booking.train_name }} ({{ booking.train_number }})</p>
+                    <p><strong>From:</strong> {{ booking.source }}</p>
+                    <p><strong>To:</strong> {{ booking.destination }}</p>
+                    <p><strong>Date:</strong> {{ booking.journey_date }}</p>
+                    <p><strong>Departure:</strong> {{ booking.departure_time }}</p>
+                    <p><strong>Arrival:</strong> {{ booking.arrival_time }}</p>
+                </div>
+                
+                <div class="seat-info">
+                    <h3>Seat Information</h3>
+                    <p><strong>Coach:</strong> {{ booking.coach }}</p>
+                    <p><strong>Seat Number:</strong> {{ booking.seat_number }}</p>
+                    <p><strong>Class:</strong> {{ booking.seat_type }}</p>
+                    <p><strong>Price:</strong> ₹{{ booking.price }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="total-amount">
+            <h5 class="text-end">Total Amount: ₹{{ bookings|sum(attribute='price') }}</h5>
+        </div>
+
+        <div class="confirmation-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="btn btn-success" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Ticket
+            </button>
+            <button class="btn btn-info" onclick="sendEmailConfirmation()">
+                <i class="fas fa-envelope"></i> Send Email
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket Details Modal -->
+<div id="ticketModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Ticket Details</h3>
+            <span class="close-modal" onclick="closeTicketModal()">&times;</span>
+        </div>
+        <div id="ticketDetailsContent" class="modal-body">
+            <!-- Ticket details will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Add EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+    // Initialize EmailJS with your public key
+    (function() {
+        emailjs.init("ZNGIBcvJAqZMYbrBc"); // Replace with your EmailJS public key
+    })();
+
+    function sendEmailConfirmation() {
+        // Get all booking data
+        const bookings = bookingsData;
+        if (!bookings || bookings.length === 0) {
+            alert('No booking data available');
+            return;
+        }
+
+        // Send email for each booking
+        bookings.forEach(booking => {
+            const templateParams = {
+                to_email: "{{ current_user.email }}",
+                to_name: "{{ current_user.username }}",
+                message: `
+                    Booking ID: ${booking.id}
+                    Passenger: ${booking.passenger_name}
+                    Train: ${booking.train_name} (${booking.train_number})
+                    From: ${booking.source}
+                    To: ${booking.destination}
+                    Date: ${booking.journey_date}
+                    Departure: ${booking.departure_time}
+                    Arrival: ${booking.arrival_time}
+                    Seat: ${booking.coach} - ${booking.seat_number}
+                    Class: ${booking.seat_type}
+                    Price: ₹${booking.price}
+                `
+            };
+
+            emailjs.send('service_qjau1qb', 'template_7n7ftrr', templateParams)
+                .then(function(response) {
+                    console.log('Email sent successfully:', response);
+                    alert('Booking confirmation email sent successfully!');
+                })
+                .catch(function(error) {
+                    console.error('Failed to send email:', error);
+                    alert('Failed to send email. Please try again.');
+                });
+        });
+    }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Print ticket functionality
+    function printTicket() {
+        window.print();
+    }
+
+    // Download ticket functionality
+    function downloadTicket() {
+        // Create a new window for the ticket
+        const ticketWindow = window.open('', '_blank');
+        
+        // Get the ticket content
+        const ticketContent = document.querySelector('.booking-details').innerHTML;
+        
+        // Write the ticket content to the new window
+        ticketWindow.document.write(`
+            <html>
+                <head>
+                    <title>Train Ticket</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .ticket { border: 1px solid #ccc; padding: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="ticket">
+                        ${ticketContent}
+                    </div>
+                </body>
+            </html>
+        `);
+        
+        // Print the ticket
+        ticketWindow.document.close();
+        ticketWindow.print();
+    }
+</script>
+{% endblock %}
